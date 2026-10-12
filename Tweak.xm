@@ -1,36 +1,39 @@
 #import <UIKit/UIKit.h>
 
-// Preference path
 #define PLIST_PATH @"/var/mobile/Library/Preferences/com.alplazo1am.alien.plist"
 
-// Helper to read the toggle state
 static BOOL isEnabled() {
     NSDictionary *prefs = [NSDictionary dictionaryWithContentsOfFile:PLIST_PATH];
     if (prefs && prefs[@"enabled"] != nil) {
         return [prefs[@"enabled"] boolValue];
     }
-    return YES; // Default to enabled
+    return YES;
 }
 
-// Declare the StandBy date view controller (private class)
-@interface CSStandbyDateViewController : UIViewController
-- (void)setDate:(NSDate *)date;
-- (void)setDateText:(NSString *)text;
-@end
+// Hook NSDateFormatter to intercept the date string generation
+%hook NSDateFormatter
 
-%hook CSStandbyDateViewController
+- (NSString *)stringFromDate:(NSDate *)date {
+    NSString *original = %orig(date);
+    if (!isEnabled()) return original;
 
-- (void)setDate:(NSDate *)date {
-    %orig(date);
-    if (!isEnabled()) return;
-
-    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    formatter.dateFormat = @"EEEE, MMMM d"; // "Thursday, December 16"
-    NSString *fullDate = [formatter stringFromDate:date];
-
-    if ([self respondsToSelector:@selector(setDateText:)]) {
-        [self performSelector:@selector(setDateText:) withObject:fullDate];
+    // Only apply to short date formats that produce abbreviated months
+    NSString *format = [self dateFormat];
+    if ([format containsString:@"MMM"] && ![format containsString:@"MMMM"]) {
+        // Check if this is likely the Notification Center date
+        // by looking at the current thread's call stack context
+        NSArray *callStack = [NSThread callStackSymbols];
+        for (NSString *symbol in callStack) {
+            if ([symbol containsString:@"NotificationCenter"] ||
+                [symbol containsString:@"CoverSheet"] ||
+                [symbol containsString:@"CSNotification"]) {
+                NSDateFormatter *fullFormatter = [[NSDateFormatter alloc] init];
+                fullFormatter.dateFormat = @"EEEE, MMMM d";
+                return [fullFormatter stringFromDate:date];
+            }
+        }
     }
+    return original;
 }
 
 %end
