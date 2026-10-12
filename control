@@ -2,7 +2,7 @@ Package: com.alplazo1am.alien
 Name: Alien
 Version: 1.0.0
 Architecture: iphoneos-arm64
-Description: An Eliz extension that displays the full date on the horizontal (StandBy) lock screen.
+Description: An Eliz extension that displays the full date on the horizontal Notification Center.
 Author: Alplazo1am
 Maintainer: Alplazo1am
 Section: Tweaks
