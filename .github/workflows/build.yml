@@ -9,14 +9,34 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - name: Setup Theos
-        uses: Randomblock1/theos-action@v1
-        with:
-          theos-dir: 'theos'
-          theos-src: 'https://github.com/theos/theos'
-          theos-sdks: 'https://github.com/theos/sdks'
+      - name: Install Theos
+        run: |
+          export THEOS=$HOME/theos
+          echo "THEOS=$THEOS" >> $GITHUB_ENV
+
+          # Install Theos
+          git clone --recursive https://github.com/theos/theos.git $THEOS
+
+          # Install iOS SDKs
+          mkdir -p $THEOS/sdks
+          cd $THEOS/sdks
+          curl -L -o sdks.zip https://github.com/theos/sdks/archive/master.zip
+          unzip -q sdks.zip
+          mv sdks-master/*.sdk .
+          rm -rf sdks.zip sdks-master
+
+          # Install ldid (required for signing)
+          brew install ldid
+
+          # Install dpkg (required for building .deb)
+          brew install dpkg
+
+          # Verify
+          echo "SDKs installed:"
+          ls $THEOS/sdks
 
       - name: Build rootless package
         run: |
