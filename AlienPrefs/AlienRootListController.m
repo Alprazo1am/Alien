@@ -1,4 +1,8 @@
-#import <Preferences/PSListController.h>
+#import <UIKit/UIKit.h>
+
+@interface PSListController : UIViewController
+- (id)loadSpecifiersFromPlistName:(NSString *)name target:(id)target;
+@end
 
 @interface AlienRootListController : PSListController
 @end
@@ -6,10 +10,7 @@
 @implementation AlienRootListController
 
 - (NSArray *)specifiers {
-    if (!_specifiers) {
-        _specifiers = [self loadSpecifiersFromPlistName:@"Root" target:self];
-    }
-    return _specifiers;
+    return [self loadSpecifiersFromPlistName:@"Root" target:self];
 }
 
 - (void)viewDidLoad {
