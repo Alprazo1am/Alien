@@ -10,30 +10,21 @@ static BOOL isEnabled() {
     return YES;
 }
 
-// Hook NSDateFormatter to intercept the date string generation
 %hook NSDateFormatter
 
-- (NSString *)stringFromDate:(NSDate *)date {
-    NSString *original = %orig(date);
-    if (!isEnabled()) return original;
-
-    // Only apply to short date formats that produce abbreviated months
-    NSString *format = [self dateFormat];
-    if ([format containsString:@"MMM"] && ![format containsString:@"MMMM"]) {
-        // Check if this is likely the Notification Center date
-        // by looking at the current thread's call stack context
-        NSArray *callStack = [NSThread callStackSymbols];
-        for (NSString *symbol in callStack) {
-            if ([symbol containsString:@"NotificationCenter"] ||
-                [symbol containsString:@"CoverSheet"] ||
-                [symbol containsString:@"CSNotification"]) {
-                NSDateFormatter *fullFormatter = [[NSDateFormatter alloc] init];
-                fullFormatter.dateFormat = @"EEEE, MMMM d";
-                return [fullFormatter stringFromDate:date];
-            }
+- (void)setDateFormat:(NSString *)format {
+    if (isEnabled()) {
+        // iOS uses "EEE, MMM d" for the abbreviated NC date.
+        // Swap it to "EEEE, MMMM d" for the full version.
+        if ([format isEqualToString:@"EEE, MMM d"]) {
+            format = @"EEEE, MMMM d";
+        }
+        // Cover a couple of minor variants just in case
+        else if ([format isEqualToString:@"EEE MMM d"]) {
+            format = @"EEEE MMMM d";
         }
     }
-    return original;
+    %orig(format);
 }
 
 %end
