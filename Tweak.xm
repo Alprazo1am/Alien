@@ -10,21 +10,26 @@ static BOOL isEnabled() {
     return YES;
 }
 
-%hook NSDateFormatter
+// Declare the private Notification Center date view
+@interface CSNotificationCenterDateView : UIView
+- (void)setDate:(NSDate *)date;
+- (void)setDateText:(NSString *)text;
+@end
 
-- (void)setDateFormat:(NSString *)format {
-    if (isEnabled()) {
-        // iOS uses "EEE, MMM d" for the abbreviated NC date.
-        // Swap it to "EEEE, MMMM d" for the full version.
-        if ([format isEqualToString:@"EEE, MMM d"]) {
-            format = @"EEEE, MMMM d";
-        }
-        // Cover a couple of minor variants just in case
-        else if ([format isEqualToString:@"EEE MMM d"]) {
-            format = @"EEEE MMMM d";
-        }
+%hook CSNotificationCenterDateView
+
+- (void)setDate:(NSDate *)date {
+    %orig(date);
+    if (!isEnabled()) return;
+
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    formatter.dateFormat = @"EEEE, MMMM d"; // "Thursday, December 16"
+    NSString *fullDate = [formatter stringFromDate:date];
+
+    // Try the direct text setter first
+    if ([self respondsToSelector:@selector(setDateText:)]) {
+        [self performSelector:@selector(setDateText:) withObject:fullDate];
     }
-    %orig(format);
 }
 
 %end
