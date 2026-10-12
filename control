@@ -1,0 +1,9 @@
+Package: com.eliz.alien
+Name: Alien
+Version: 1.0.0
+Architecture: iphoneos-arm64
+Description: An Eliz extension that displays the full date on the horizontal lock screen (e.g. "Monday, October 12" instead of "Monday, Oct 12").
+Author: Eliz
+Maintainer: Eliz
+Section: Tweaks
+Depends: mobilesubstrate
