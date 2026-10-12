@@ -12,8 +12,8 @@ Alien_CFLAGS = -fobjc-arc
 BUNDLE_NAME = AlienPrefs
 AlienPrefs_FILES = AlienRootListController.m
 AlienPrefs_INSTALL_PATH = /Library/PreferenceBundles
-AlienPrefs_FRAMEWORKS = UIKit
-AlienPrefs_PRIVATE_FRAMEWORKS = Preferences
+AlienPrefs_FRAMEWORKS = UIKit Foundation
+AlienPrefs_LDFLAGS = -Wl,-undefined,dynamic_lookup
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 include $(THEOS_MAKE_PATH)/bundle.mk
