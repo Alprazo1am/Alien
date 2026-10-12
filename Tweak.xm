@@ -1,28 +1,36 @@
 #import <UIKit/UIKit.h>
 
-// Declare the private class and its methods so the compiler knows what we're calling.
-@interface SBFLockScreenDateView : UIView
-- (void)setUseCompactDateFormat:(BOOL)flag;
+// Preference path
+#define PLIST_PATH @"/var/mobile/Library/Preferences/com.alplazo1am.alien.plist"
+
+// Helper to read the toggle state
+static BOOL isEnabled() {
+    NSDictionary *prefs = [NSDictionary dictionaryWithContentsOfFile:PLIST_PATH];
+    if (prefs && prefs[@"enabled"] != nil) {
+        return [prefs[@"enabled"] boolValue];
+    }
+    return YES; // Default to enabled
+}
+
+// Declare the StandBy date view controller (private class)
+@interface CSStandbyDateViewController : UIViewController
 - (void)setDate:(NSDate *)date;
 - (void)setDateText:(NSString *)text;
 @end
 
-%hook SBFLockScreenDateView
+%hook CSStandbyDateViewController
 
-// Force the non-compact format flag to NO so the month is not abbreviated.
-- (void)setUseCompactDateFormat:(BOOL)arg1 {
-    %orig(NO);
-}
-
-// Fallback: override the date text directly in case the flag is ignored.
 - (void)setDate:(NSDate *)date {
     %orig(date);
+    if (!isEnabled()) return;
 
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    formatter.dateFormat = @"EEEE, MMMM d"; // "Monday, October 12"
+    formatter.dateFormat = @"EEEE, MMMM d"; // "Thursday, December 16"
     NSString *fullDate = [formatter stringFromDate:date];
 
-    [self setDateText:fullDate];
+    if ([self respondsToSelector:@selector(setDateText:)]) {
+        [self performSelector:@selector(setDateText:) withObject:fullDate];
+    }
 }
 
 %end
