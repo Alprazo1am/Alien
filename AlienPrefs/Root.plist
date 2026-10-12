@@ -1,0 +1,20 @@
+{
+    title = "Alien";
+    items = (
+        {
+            cell = "PSGroupCell";
+            label = "Settings";
+        },
+        {
+            cell = "PSSwitchCell";
+            label = "Enable Alien";
+            key = "enabled";
+            defaults = "com.alplazo1am.alien";
+            default = true;
+        },
+        {
+            cell = "PSGroupCell";
+            footerText = "Alien by Alplazo1am — Eliz Extension";
+        }
+    );
+}
